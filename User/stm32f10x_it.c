@@ -166,6 +166,18 @@ void USART1_IRQHandler(void)
     uint8_t data = USART_ReceiveData(USART1);          //读取接收到的数据
   }
 }
+
+void DMA1_Channel1_IRQHandler(void)
+{
+  if (DMA_GetITStatus(DMA1_IT_TC1) != RESET) //检查DMA1通道1的传输完成标志位是否置位
+  {
+    /* code */
+    low_pass_filer_update_i(get_ad_filter(X_AXIS), (*get_ad_data(X_AXIS))); //更新X轴的滤波器状态
+    low_pass_filer_update_i(get_ad_filter(Y_AXIS), (*get_ad_data(Y_AXIS))); //更新Y轴的滤波器状态
+    DMA_ClearITPendingBit(DMA1_IT_TC1); //清除DMA1通道1的传输完成标志位
+  }
+  
+}
 /******************************************************************************/
 /*                 STM32F10x Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */

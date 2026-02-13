@@ -86,6 +86,10 @@ virtualFolder:
         - path: Hardware/Periph_Init.h
         - path: Hardware/foc.c
         - path: Hardware/foc.h
+        - path: Hardware/mathoperation.c
+        - path: Hardware/mathoperation.h
+        - path: Hardware/AD.c
+        - path: Hardware/AD.h
       folders: []
     - name: User
       files:
@@ -93,6 +97,7 @@ virtualFolder:
         - path: User/stm32f10x_conf.h
         - path: User/stm32f10x_it.c
         - path: User/stm32f10x_it.h
+        - path: User/main.h
       folders: []
 dependenceList: []
 outDir: build
@@ -235,7 +240,7 @@ targets:
         optionBytes: .eide/target 1.st.option.bytes.ini
         otherCmds: ""
         proType: SWD
-        resetMode: default
+        resetMode: SWrst
         runAfterProgram: true
         speed: 4000
     uploader: STLink

@@ -4,6 +4,27 @@
             "path": "."
         }
     ],
-    "settings": {},
-    "extensions": {}
+    "settings": {
+        "C_Cpp.default.configurationProvider": "ms-vscode.cpptools",
+        "C_Cpp.default.intelliSenseMode": "gcc-arm",
+        "C_Cpp.default.compilerPath": "D:/GNU Arm Embedded Toolchain/bin/arm-none-eabi-gcc.exe",
+        "C_Cpp.default.cStandard": "c99",
+        "C_Cpp.default.cppStandard": "c++17",
+        "files.associations": {
+            "*.h": "c",
+            "stm32f10x*.h": "c",
+            "core_cm3.h": "c"
+        },
+        "search.exclude": {
+            "**/build": true,
+            "**/Debug": true,
+            "**/Release": true,
+            "**/.vscode": false
+        }
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-vscode.cpptools"
+        ]
+    }
 }
