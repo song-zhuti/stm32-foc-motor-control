@@ -14,7 +14,7 @@
 /Objects/
 /Listings/
 
-# 调试和临时文件
+# 调试和编译产物
 *.elf
 *.bin
 *.hex
@@ -24,12 +24,10 @@
 *.d
 *.su
 *.axf
+*.out
+*.exe
 
-# 项目配置和模板
-*.ept
-*.eide-template
-*.uvprojx
-*.uvoptx
+# 项目配置（不建议上传）
 *.eww
 *.ewp
 
