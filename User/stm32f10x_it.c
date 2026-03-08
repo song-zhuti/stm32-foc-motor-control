@@ -174,6 +174,8 @@ void DMA1_Channel1_IRQHandler(void)
     /* code */
     low_pass_filer_update_i(get_ad_filter(X_AXIS), (*get_ad_data(X_AXIS))); //更新X轴的滤波器状态
     low_pass_filer_update_i(get_ad_filter(Y_AXIS), (*get_ad_data(Y_AXIS))); //更新Y轴的滤波器状态
+    low_pass_filer_update_i(get_ad_filter(ENCODER), (*get_ad_data(ENCODER))); //更新编码器的滤波器状态
+
     DMA_ClearITPendingBit(DMA1_IT_TC1); //清除DMA1通道1的传输完成标志位
   }
   

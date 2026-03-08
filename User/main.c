@@ -47,6 +47,8 @@ int main(void)
 	{
 		OLED_ShowNum(2, 1, (uint32_t)(get_ad_filter(X_AXIS)->prev_output), 4);
 		OLED_ShowNum(2, 6, (uint32_t)(get_ad_filter(Y_AXIS)->prev_output), 4);
+		OLED_ShowNum(2, 11, (uint32_t)(get_ad_filter(ENCODER)->prev_output), 4);
+
 		// BLDC_Six();
 		Delay_ms(200);
 	}

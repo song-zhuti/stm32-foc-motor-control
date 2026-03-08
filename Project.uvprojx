@@ -724,6 +724,26 @@
               <FileType>5</FileType>
               <FilePath>.\Hardware\Periph_Init.h</FilePath>
             </File>
+            <File>
+              <FileName>AD.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Hardware\AD.c</FilePath>
+            </File>
+            <File>
+              <FileName>AD.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Hardware\AD.h</FilePath>
+            </File>
+            <File>
+              <FileName>mathoperation.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Hardware\mathoperation.c</FilePath>
+            </File>
+            <File>
+              <FileName>mathoperation.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Hardware\mathoperation.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

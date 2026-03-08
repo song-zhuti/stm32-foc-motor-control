@@ -51,8 +51,12 @@ void Perioh_gpioinit(void)
   GPIO_Init(GPIOA, &GPIO_InitStructure);						            //将PA11引脚初始化为推挽输出,用于somplefoc_enable
 
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;               //复用推挽输出
-  GPIO_InitStructure.GPIO_Pin =GPIO_Pin_0 | GPIO_Pin_1;
-  GPIO_Init(GPIOB, &GPIO_InitStructure);				                //将PB0和PB1引脚初始化为复用推挽输出,用于tim3_ch3、4的PWM输出 		            
+  GPIO_InitStructure.GPIO_Pin =GPIO_Pin_0;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);				                //将PB0引脚初始化为复用推挽输出,用于tim3_ch3的PWM输出
+  
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;                 //模拟输入
+  GPIO_InitStructure.GPIO_Pin =GPIO_Pin_1;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);                        //将PB1引脚初始化为模拟输入,用于adc测量编码器角度
 //还有PB10和PB11没初始化不知道i2c咋用
 }
 
@@ -79,14 +83,14 @@ void Perioh_tim3init(void)
   TIM_InitStructure.TIM_CounterMode = TIM_CounterMode_Up;       //计数器模式，向上计数
   TIM_InitStructure.TIM_Period = 5000-1;                        //ARR自动重装载寄存器计数到999时产生中断
   TIM_InitStructure.TIM_ClockDivision = TIM_CKD_DIV1;           //输入时钟滤波器分频，这里为1分频
-  TIM_TimeBaseInit(TIM3, &TIM_InitStructure);                   //配置定时器Tim3的时基单元
+  TIM_TimeBaseInit(TIM3, &TIM_InitStructure);                   //配置定时器Tim3的时基单元，频率为72MHz/（7200*5000）=2Hz
 
   TIM_InitStructure.TIM_RepetitionCounter = 0;                  //高级定时器才有所以不用
   TIM_InitStructure.TIM_Prescaler = 7200-1;                     //PSC预分频器，将APB1时钟分频为72MHz
   TIM_InitStructure.TIM_CounterMode = TIM_CounterMode_Up;       //计数器模式，向上计数
   TIM_InitStructure.TIM_Period = 10-1;                          //ARR自动重装载寄存器计数到9时产生中断
   TIM_InitStructure.TIM_ClockDivision = TIM_CKD_DIV1;           //输入时钟滤波器分频，这里为1分频
-  TIM_TimeBaseInit(TIM2, &TIM_InitStructure);                   //配置定时器Tim2的时基单元
+  TIM_TimeBaseInit(TIM2, &TIM_InitStructure);                   //配置定时器Tim2的时基单元,频率为72MHz/72000=1KHz
 
   // TIM_OCInitTypeDef TIM_OCInitStructure;
   // TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;             //PWM模式1
@@ -104,7 +108,7 @@ void Perioh_tim3init(void)
   TIM_InitStructure.TIM_CounterMode = TIM_CounterMode_Up;       //计数器模式，向上计数
   TIM_InitStructure.TIM_Period = 5000-1;                        //ARR自动重装载寄存器计数到999时产生中断
   TIM_InitStructure.TIM_ClockDivision = TIM_CKD_DIV1;           //输入时钟滤波器分频，这里为1分频
-  TIM_TimeBaseInit(TIM1, &TIM_InitStructure);                   //配置定时器Tim1的时基单元
+  TIM_TimeBaseInit(TIM1, &TIM_InitStructure);                   //配置定时器Tim1的时基单元，频率为72MHz/（7200*5000）=2Hz
 
   /* 使能定时器Tim3中断 */
   TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
@@ -150,8 +154,9 @@ void Perioh_ad1init(void)
   RCC_ADCCLKConfig(RCC_PCLK2_Div6);                             //将ADC时钟分频为72MHz/6=12MHz
 
   /* 采样时间的计算t (us)= (采样周期+ 12.5个周期) / ADC时钟频率(单位:MHz) */
-  ADC_RegularChannelConfig(ADC1,ADC_Channel_4,1,ADC_SampleTime_55Cycles5); //配置ADC1的规则通道1为PA3,采样时间为55个周期
-  ADC_RegularChannelConfig(ADC1,ADC_Channel_5,2,ADC_SampleTime_55Cycles5); //配置ADC1的规则通道2为PA4,采样时间为55个周期
+  ADC_RegularChannelConfig(ADC1,ADC_Channel_4,1,ADC_SampleTime_55Cycles5); //配置ADC1的规则通道1为PA4,采样时间为55个周期
+  ADC_RegularChannelConfig(ADC1,ADC_Channel_5,2,ADC_SampleTime_55Cycles5); //配置ADC1的规则通道2为PA5,采样时间为55个周期
+  ADC_RegularChannelConfig(ADC1,ADC_Channel_9,3,ADC_SampleTime_55Cycles5); //配置ADC1的规则通道3为PA6,采样时间为55个周期
 
   ADC_InitTypeDef ADC_InitStructure;
   ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;           //独立模式
@@ -159,7 +164,7 @@ void Perioh_ad1init(void)
   ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None; //不使用外部触发,使用软件触发
   ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;       //数据右对齐
   ADC_InitStructure.ADC_ScanConvMode = ENABLE;                 //开启扫描模式
-  ADC_InitStructure.ADC_NbrOfChannel = 2;                      //转换通道数为2
+  ADC_InitStructure.ADC_NbrOfChannel = 3;                      //转换通道数为3,
   ADC_Init(ADC1, &ADC_InitStructure);                          //初始化ADC1
 
   ADC_Cmd(ADC1, ENABLE);                                       //使能ADC1

@@ -235,7 +235,7 @@ targets:
         speed: 8000
       STLink:
         address: "0x8000000"
-        bin: ""
+        bin: "build/Target 1/Project.axf"
         elFile: None
         optionBytes: .eide/target 1.st.option.bytes.ini
         otherCmds: ""
