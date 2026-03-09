@@ -1,178 +1,166 @@
-# 当前项目整体结构
+# Hardware Map — STM32 BLDC Project
 
-## 1. 项目目标
-基于 STM32F103C8 + SimpleFOCmini + AS5600 的 BLDC 控制实验项目。
+本文件用于记录项目的 **硬件连接关系与引脚映射**。
 
-当前项目目标：
-- 实现 BLDC 基础驱动
-- 实现编码器角度读取
-- 建立 PWM 电机驱动结构
-- 为后续 FOC 控制做准备
+本文件只描述：
 
----
+- MCU 与驱动板
+- 电机连接
+- 编码器连接
+- 输入设备连接
+- ADC 通道映射
+- 控制引脚映射
 
-## 2. 当前项目硬件组成
+本文件 **不记录软件结构**。  
+软件结构请参考：
 
-### MCU
-- STM32F103C8
+Docs/Notes/project_structure.md
 
-### Driver Board
-- SimpleFOCmini
+本文件 **不记录开发任务和开发日志**。  
+开发记录请参考：
 
-### Driver Chip
-- MS8313
-
-### Motor
-- BLDC Motor
-
-### Encoder
-- AS5600
-- 当前使用 OUT 模拟输出方式
-
-### User Input
-- 摇杆（ADC）
-- 按键（GPIO）
-
-### Debug
-- 串口
-- OLED（如使用）
+Docs/Notes/Plain next.md
 
 ---
 
-## 3. 当前软件功能模块
+# 1 核心硬件
 
-### 3.1 系统初始化
-负责 GPIO、ADC、DMA、TIM、USART 等基础外设初始化。
+## MCU
 
-### 3.2 ADC采样模块
-负责：
-- 摇杆 X/Y 采样
-- AS5600 OUT 采样
-- DMA 数据搬运
-- 数据缓存与滤波
+STM32F103C8
 
-### 3.3 编码器模块（当前功能已实现，后续准备独立）
-负责：
-- 读取 AS5600 OUT 电压
-- 转换角度值
-- 后续扩展角度连续化与速度计算
+## Driver Board
 
-### 3.4 输入模块
-负责：
-- 摇杆输入
-    - Joystick X → PA5
-    - Joystick Y → PA4
-- 按键输入
-    - Key → PA3
+SimpleFOCmini
 
-### 3.5 电机驱动模块
-负责：
-- 控制 SimpleFOCmini 输入端
-- 当前 GPIO 驱动已验证
-- 后续改为 TIM1 PWM 驱动
+## Driver Chip
 
-### 3.6 调试模块
-负责：
-- 串口打印
-- OLED 显示
-- LED 状态指示
+MS8313
+
+## Motor
+
+BLDC Motor
+
+## Encoder
+
+AS5600 Magnetic Encoder
+
+当前使用方式：
+
+**OUT 模拟输出模式**
+
+I2C 暂未使用。
 
 ---
 
-## 4. 当前工程目录职责
+# 2 电机驱动连接
 
-### User
-主程序入口与中断入口：
-- main.c
-- stm32f10x_it.c
-- 配置与调度逻辑
+## Driver Control Input
 
-### Hardware
-当前主要功能实现层，包含：
-- 外设初始化
-- ADC采样
-- 输入驱动
-- 显示驱动
-- 电机控制相关
-- 数学/算法相关
+- IN1 → PA10
+- IN2 → PA9
+- IN3 → PA8
+- EN  → PB12（planned）
 
-### System
-通用系统支持：
-- 延时
-- 公共基础功能
+## Motor Phase Output
 
-### Start
-启动文件与底层系统文件
-
-### Library
-STM32 标准外设库
-
-### Docs
-项目文档、原理图、手册、备忘与硬件映射
+- OUT1 → Motor U
+- OUT2 → Motor V
+- OUT3 → Motor W
 
 ---
 
-## 5. 当前 ADC 通道分配
+# 3 编码器连接
+
+## AS5600 Power
+
+- VDD → 3.3V
+- GND → GND
+
+## AS5600 Signal
+
+- OUT → PB1
+- PGO → PB11
+
+当前说明：
+
+- 当前使用 OUT 模拟电压输出
+- 后续可扩展为 I2C 读取
+- 当前 SCL / SDA 未接入软件功能
+
+## I2C Signal（当前未使用）
+
+- SCL → 未使用
+- SDA → 未使用
+
+---
+
+# 4 用户输入连接
+
+## Joystick
+
+- Joystick Y → PA4
+- Joystick X → PA5
+
+## Key
+
+- Key → PA3
+
+---
+
+# 5 ADC 通道映射
+
+## ADC Channel Mapping
 
 | DMA槽位 | ADC通道 | 引脚 | 信号 |
 |--------|--------|------|------|
-| 0 | ADC_Channel_1 | PA1 | Joystick Y |
-| 1 | ADC_Channel_2 | PA2 | Joystick X |
+| 0 | ADC_Channel_4 | PA4 | Joystick Y |
+| 1 | ADC_Channel_5 | PA5 | Joystick X |
 | 2 | ADC_Channel_9 | PB1 | AS5600 OUT |
 
-### DMA Buffer 对应关系
-- adc_buf[0] -> Joystick Y
-- adc_buf[1] -> Joystick X
-- adc_buf[2] -> AS5600 OUT
+---
+
+## DMA Buffer Mapping
+
+- adc_buf[0] → Joystick Y
+- adc_buf[1] → Joystick X
+- adc_buf[2] → AS5600 OUT
 
 ---
 
-## 6. 当前电机控制引脚
+# 6 调试与状态信号
 
-### Driver Control Signals
-- IN1 -> PA10
-- IN2 -> PA9
-- IN3 -> PA8
-- EN  -> 待定
+## LED / Status
 
-### Motor Phase Output
-- OUT1 -> Motor U
-- OUT2 -> Motor V
-- OUT3 -> Motor W
+- 状态灯：由软件控制，具体引脚以当前代码实现为准
+
+## USART
+
+- 串口调试功能已存在
+- 具体 TX / RX 引脚以当前代码实现为准
 
 ---
 
-## 7. 当前开发状态
+# 7 当前未使用或待确认信号
 
-### 已完成
-- GitHub 仓库建立与同步
-- 文档目录建立
-- ADC + DMA 基本架构建立
-- 摇杆 ADC 采样
-- AS5600 OUT 模拟输出读取
-- 电机 GPIO 驱动验证
-- 工程可构建可下载
+## Driver Status Pins
 
-### 正在进行
-- 整理项目结构
-- 明确模块职责
-- 准备将电机驱动改为 PWM 输出
+- FAULT → 未使用
+- SLEEP → 未使用
+- RESET → 未使用
 
-### 下一步
-- 独立 encoder 模块
-- 独立 motor / pwm 模块
-- 完成 TIM1 PWM 输出
-- 建立角度与速度处理流程
+## Planned Signals
+
+- EN → PB12（planned）
 
 ---
 
-## 8. 当前工程结构是否足够
+# 8 使用说明
 
-结论：
-当前目录结构可以支撑本项目继续开发，不需要立即大规模重构。
+当以下内容发生变化时，必须同步更新本文件：
 
-策略：
-- 保留当前目录结构
-- 新功能尽量模块化新增
-- 不再继续把逻辑堆到 main.c
-- 通过文档和职责划分保持工程清晰
+- PWM 控制引脚变更
+- ADC 采样引脚变更
+- 编码器接线变更
+- Driver 板控制信号变更
+- Key / Joystick 接线变更

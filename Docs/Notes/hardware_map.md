@@ -1,66 +1,300 @@
-# Hardware Map
+# Project Structure — STM32 BLDC Project
 
-## MCU
-STM32F103C8
+本文件描述：
 
-## Driver Board
-SimpleFOCmini
+- 项目软件架构
+- 模块职责
+- 工程目录结构
+- 当前软件开发状态
 
-Driver Chip : MS8313
+本文件 **不记录硬件连接信息**。
 
-## Motor
-BLDC Motor
+硬件连接请参考：
 
-## Encoder
-AS5600 Magnetic Encoder
+Docs/Notes/hardware_map.md
+
+开发记录请参考：
+
+Docs/Notes/Plain next.md
 
 ---
 
-# Control Interface
+# 1 项目目标
 
-## Motor Phase Output
+基于 STM32F103C8 + SimpleFOCmini + AS5600  
+建立一个可持续扩展的 BLDC 控制实验工程。
 
-OUT1 -> Motor U
-OUT2 -> Motor V
-OUT3 -> Motor W
+软件层目标：
 
-## PWM Control
+- 建立清晰稳定的嵌入式工程结构
+- 完成 ADC + DMA 采样架构
+- 完成编码器角度读取
+- 建立 PWM 电机驱动架构
+- 为后续 FOC 控制算法做准备
 
-IN1 : PA10
-IN2 : PA9
-IN3 : PA8
+---
 
-## Enable Control
+# 2 软件系统组成
 
-EN : PB12 (planned)
+当前软件系统主要由以下模块组成：
 
-## Status Signals
+## 系统初始化模块
 
-FAULT : 未使用
-SLEEP : 未使用
-RESET : 未使用
+负责：
 
-## Encoder
-AS5600
+- GPIO 初始化
+- ADC 初始化
+- DMA 初始化
+- TIM 初始化
+- USART 初始化
 
-## Encoder Interface (current plan)
+系统启动时由 `main.c` 调用。
 
-VDD : 3.3V
-GND : GND
-OUT : PB10
-PGO : 3.3V
+---
 
-SCL : 未使用
-SDA : 未使用
+## ADC 采样模块
 
-## ADC Channel Mapping
+负责：
 
-| DMA槽位 | ADC通道 | 引脚 | 信号 |
-|--------|--------|------|------|
-| 0 | ADC_Channel_1 | PA4 | Joystick Y |
-| 1 | ADC_Channel_2 | PA5 | Joystick X |
-| 2 | ADC_Channel_9 | PB1 | AS5600 OUT |
+- 摇杆 ADC 采样
+- 编码器模拟信号采样
+- DMA 数据搬运
+- 数据缓存与滤波
 
-## Digital Inputs
+模块目标：
 
-Key : PB13
+为上层模块提供稳定的采样数据接口。
+
+---
+
+## 编码器模块
+
+负责：
+
+- 读取 AS5600 输出信号
+- 转换角度值
+- 后续扩展角度连续化
+- 后续扩展角速度计算
+
+当前阶段：
+
+编码器逻辑正在整理为独立模块。
+
+---
+
+## 输入模块
+
+负责：
+
+- 摇杆输入读取
+- 按键输入检测
+
+为控制逻辑提供用户输入。
+
+---
+
+## 电机驱动模块
+
+负责：
+
+- 控制 SimpleFOCmini 驱动板输入端
+
+当前状态：
+
+使用 GPIO 驱动进行基础验证。
+
+下一阶段：
+
+升级为 TIM PWM 驱动。
+
+---
+
+## 调试模块
+
+负责：
+
+- 串口调试输出
+- OLED 显示
+- LED 状态指示
+
+用于开发阶段调试。
+
+---
+
+# 3 工程目录结构
+
+当前工程目录：
+
+
+Hardware
+Library
+Start
+System
+User
+Docs
+
+
+---
+
+## User
+
+职责：
+
+主程序入口与中断入口。
+
+主要文件：
+
+- main.c
+- stm32f10x_it.c
+
+负责：
+
+- 系统初始化
+- 模块调用
+- 调试输出
+
+---
+
+## Hardware
+
+职责：
+
+功能模块实现层。
+
+主要包含：
+
+- 外设初始化
+- ADC 采样
+- 输入驱动
+- 显示驱动
+- 电机控制相关
+- 数学运算模块
+
+---
+
+## System
+
+职责：
+
+系统通用工具模块。
+
+例如：
+
+- 延时函数
+- 基础系统支持
+
+---
+
+## Start
+
+职责：
+
+启动文件与系统底层支持。
+
+例如：
+
+- 启动代码
+- 系统时钟初始化
+- Cortex 内核支持
+
+---
+
+## Library
+
+职责：
+
+STM32 标准外设库。
+
+---
+
+## Docs
+
+职责：
+
+项目文档与开发记录。
+
+包含：
+
+- 软件结构说明
+- 硬件连接说明
+- 开发记录
+- 技术资料
+
+---
+
+# 4 软件架构原则
+
+为了保持工程可持续扩展，需要遵守以下原则：
+
+---
+
+## main.c 保持简洁
+
+main.c 只负责：
+
+- 初始化系统
+- 调用模块
+- 调试输出
+
+不在 main.c 中堆积业务逻辑。
+
+---
+
+## 功能必须模块化
+
+每个模块应独立实现功能，例如：
+
+- ADC
+- Encoder
+- Motor
+- Key
+- PWM
+
+模块之间通过接口通信。
+
+---
+
+## 模块内部变量尽量使用 static
+
+避免全局变量污染。
+
+---
+
+## 模块接口必须稳定
+
+模块应提供清晰接口，例如：
+
+Encoder_Init()  
+Encoder_Update()  
+Encoder_GetAngle()
+
+避免外部直接访问模块内部数据。
+
+---
+
+# 5 当前软件开发状态
+
+当前软件阶段：
+
+**基础架构整理阶段**
+
+已完成：
+
+- 工程可构建
+- ADC + DMA 基础架构
+- 摇杆 ADC 读取
+- AS5600 模拟输出读取
+- 电机 GPIO 驱动验证
+- 基础文档体系建立
+
+正在进行：
+
+- 模块职责整理
+- 编码器模块独立
+
+下一阶段：
+
+- PWM 电机驱动
+- Encoder 模块完善
+- Motor / PWM 模块建立
+- 为 FOC 控制做准备
