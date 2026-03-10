@@ -1,300 +1,149 @@
-# Project Structure — STM32 BLDC Project
+# Hardware Map — STM32 BLDC Project
 
-本文件描述：
+本文件用于记录项目的 **硬件连接关系与引脚映射**。
 
-- 项目软件架构
-- 模块职责
-- 工程目录结构
-- 当前软件开发状态
+本文件只描述：
 
-本文件 **不记录硬件连接信息**。
+- MCU
+- 电机驱动板
+- 电机连接
+- 编码器连接
+- 用户输入
+- ADC 通道映射
+- 控制引脚
 
-硬件连接请参考：
+本文件 **不记录软件结构**。  
+软件结构请参考：
 
-Docs/Notes/hardware_map.md
+Docs/Notes/project_structure.md
 
+本文件 **不记录开发任务和开发日志**。  
 开发记录请参考：
 
 Docs/Notes/Plain next.md
 
 ---
 
-# 1 项目目标
+# 1 MCU
 
-基于 STM32F103C8 + SimpleFOCmini + AS5600  
-建立一个可持续扩展的 BLDC 控制实验工程。
+MCU：
 
-软件层目标：
-
-- 建立清晰稳定的嵌入式工程结构
-- 完成 ADC + DMA 采样架构
-- 完成编码器角度读取
-- 建立 PWM 电机驱动架构
-- 为后续 FOC 控制算法做准备
+STM32F103C8
 
 ---
 
-# 2 软件系统组成
+# 2 Driver Board
 
-当前软件系统主要由以下模块组成：
+Driver Board：
 
-## 系统初始化模块
+SimpleFOCmini
 
-负责：
+Driver Chip：
 
-- GPIO 初始化
-- ADC 初始化
-- DMA 初始化
-- TIM 初始化
-- USART 初始化
-
-系统启动时由 `main.c` 调用。
+MS8313
 
 ---
 
-## ADC 采样模块
+# 3 Motor
 
-负责：
+Motor：
 
-- 摇杆 ADC 采样
-- 编码器模拟信号采样
-- DMA 数据搬运
-- 数据缓存与滤波
-
-模块目标：
-
-为上层模块提供稳定的采样数据接口。
+BLDC Motor
 
 ---
 
-## 编码器模块
+# 4 Motor Driver Control
 
-负责：
+Driver 控制引脚：
 
-- 读取 AS5600 输出信号
-- 转换角度值
-- 后续扩展角度连续化
-- 后续扩展角速度计算
+IN1 → PA10  
+IN2 → PA9  
+IN3 → PA8  
 
-当前阶段：
+Enable：
 
-编码器逻辑正在整理为独立模块。
-
----
-
-## 输入模块
-
-负责：
-
-- 摇杆输入读取
-- 按键输入检测
-
-为控制逻辑提供用户输入。
+EN → PB12（planned）
 
 ---
 
-## 电机驱动模块
+# 5 Motor Phase Output
 
-负责：
+Driver 输出：
 
-- 控制 SimpleFOCmini 驱动板输入端
-
-当前状态：
-
-使用 GPIO 驱动进行基础验证。
-
-下一阶段：
-
-升级为 TIM PWM 驱动。
+OUT1 → Motor U  
+OUT2 → Motor V  
+OUT3 → Motor W  
 
 ---
 
-## 调试模块
+# 6 Encoder
 
-负责：
+Encoder：
 
-- 串口调试输出
+AS5600 Magnetic Encoder
+
+当前使用模式：
+
+OUT 模拟输出
+
+---
+
+## Encoder Power
+
+VDD → 3.3V  
+GND → GND  
+
+---
+
+## Encoder Signal
+
+OUT → PB1  
+PGO → PB11  
+
+I2C 当前未使用：
+
+SCL → 未使用  
+SDA → 未使用  
+
+---
+
+# 7 User Input
+
+Joystick：
+
+Joystick Y → PA4  
+Joystick X → PA5  
+
+Key：
+
+Key → PA3  
+
+---
+
+# 8 ADC Channel Mapping
+
+| DMA Slot | ADC Channel | Pin | Signal |
+|---------|-------------|-----|-------|
+| 0 | ADC_Channel_4 | PA4 | Joystick Y |
+| 1 | ADC_Channel_5 | PA5 | Joystick X |
+| 2 | ADC_Channel_9 | PB1 | AS5600 OUT |
+
+---
+
+# 9 DMA Buffer Mapping
+
+
+adc_buf[0] → Joystick Y
+adc_buf[1] → Joystick X
+adc_buf[2] → AS5600 OUT
+
+
+---
+
+# 10 Debug Interface
+
+当前调试方式：
+
+- 串口调试
 - OLED 显示
 - LED 状态指示
-
-用于开发阶段调试。
-
----
-
-# 3 工程目录结构
-
-当前工程目录：
-
-
-Hardware
-Library
-Start
-System
-User
-Docs
-
-
----
-
-## User
-
-职责：
-
-主程序入口与中断入口。
-
-主要文件：
-
-- main.c
-- stm32f10x_it.c
-
-负责：
-
-- 系统初始化
-- 模块调用
-- 调试输出
-
----
-
-## Hardware
-
-职责：
-
-功能模块实现层。
-
-主要包含：
-
-- 外设初始化
-- ADC 采样
-- 输入驱动
-- 显示驱动
-- 电机控制相关
-- 数学运算模块
-
----
-
-## System
-
-职责：
-
-系统通用工具模块。
-
-例如：
-
-- 延时函数
-- 基础系统支持
-
----
-
-## Start
-
-职责：
-
-启动文件与系统底层支持。
-
-例如：
-
-- 启动代码
-- 系统时钟初始化
-- Cortex 内核支持
-
----
-
-## Library
-
-职责：
-
-STM32 标准外设库。
-
----
-
-## Docs
-
-职责：
-
-项目文档与开发记录。
-
-包含：
-
-- 软件结构说明
-- 硬件连接说明
-- 开发记录
-- 技术资料
-
----
-
-# 4 软件架构原则
-
-为了保持工程可持续扩展，需要遵守以下原则：
-
----
-
-## main.c 保持简洁
-
-main.c 只负责：
-
-- 初始化系统
-- 调用模块
-- 调试输出
-
-不在 main.c 中堆积业务逻辑。
-
----
-
-## 功能必须模块化
-
-每个模块应独立实现功能，例如：
-
-- ADC
-- Encoder
-- Motor
-- Key
-- PWM
-
-模块之间通过接口通信。
-
----
-
-## 模块内部变量尽量使用 static
-
-避免全局变量污染。
-
----
-
-## 模块接口必须稳定
-
-模块应提供清晰接口，例如：
-
-Encoder_Init()  
-Encoder_Update()  
-Encoder_GetAngle()
-
-避免外部直接访问模块内部数据。
-
----
-
-# 5 当前软件开发状态
-
-当前软件阶段：
-
-**基础架构整理阶段**
-
-已完成：
-
-- 工程可构建
-- ADC + DMA 基础架构
-- 摇杆 ADC 读取
-- AS5600 模拟输出读取
-- 电机 GPIO 驱动验证
-- 基础文档体系建立
-
-正在进行：
-
-- 模块职责整理
-- 编码器模块独立
-
-下一阶段：
-
-- PWM 电机驱动
-- Encoder 模块完善
-- Motor / PWM 模块建立
-- 为 FOC 控制做准备

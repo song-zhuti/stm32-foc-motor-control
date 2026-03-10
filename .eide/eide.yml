@@ -139,7 +139,7 @@ targets:
             warnings: all-warnings
           global:
             output-debug-info: enable
-            use-microLIB: false
+            use-microLIB: true
           linker:
             $disableOutputTask: true
             $outputTaskExcludes:
@@ -147,7 +147,6 @@ targets:
             output-format: elf
             ro-base: "0x08000000"
             rw-base: "0x20000000"
-            xo-base: ""
         scatterFilePath: ""
         storageLayout:
           RAM:
@@ -233,9 +232,14 @@ targets:
         otherCmds: ""
         proType: 1
         speed: 8000
+      OpenOCD:
+        baseAddr: "0x08000000"
+        bin: build/Target 1/Project.axf
+        interface: stlink
+        target: stm32f1x
       STLink:
         address: "0x8000000"
-        bin: "build/Target 1/Project.axf"
+        bin: build/Target 1/Project.axf
         elFile: None
         optionBytes: .eide/target 1.st.option.bytes.ini
         otherCmds: ""
@@ -243,4 +247,4 @@ targets:
         resetMode: SWrst
         runAfterProgram: true
         speed: 4000
-    uploader: STLink
+    uploader: OpenOCD

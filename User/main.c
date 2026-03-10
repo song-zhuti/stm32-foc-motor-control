@@ -40,7 +40,7 @@ int main(void)
 	ad_init(16);
 
 	/*显示静态字符串*/
-	OLED_ShowString(1, 1, "Hello World");	//1行1列显示字符串Count:
+	OLED_ShowString(1, 1, "Hello");	//1行1列显示字符串Count:
 	GPIO_SetBits(GPIOA,GPIO_Pin_11);  	//simplefoc_enable置1
 	
 	while (1)

@@ -33,21 +33,35 @@ Docs/Notes/ai_context.md
 
 当前阶段：
 
-**基础架构整理阶段**
+**从采样显示工程过渡到控制工程阶段**
 
 目标：
 
-- 保证工程结构稳定
-- 明确模块职责
-- 为后续控制算法开发做准备
-
+- 保持现有 ADC + DMA + 滤波链路稳定
+- 建立控制任务骨架
+- 为后续 Encoder / PWM / 第一个闭环做准备
 ---
 
 # 当前开发任务
 
 当前任务：
 
-1 整理 Encoder 模块
+1 建立控制任务骨架
+
+目标：
+
+- 明确 TIM3 作为控制节拍源
+- 将控制逻辑入口放入 foc 模块
+- main 循环只保留慢速显示与调试
+- 为后续 Encoder 和 PWM 接入做准备
+
+计划接口：
+
+Control_Init()  
+Control_Task()  
+Control_SetTarget()
+
+2 整理 Encoder 模块
 
 目标：
 
@@ -190,3 +204,101 @@ Encoder_GetRawAdc()
 开发任务变化：
 
 → 更新 `Plain next.md`
+---
+
+# System Data Flow (temporary)
+
+当前系统数据流：
+
+Sensor
+↓
+ADC Sampling
+↓
+DMA Transfer
+↓
+DMA Interrupt
+↓
+Low Pass Filter
+↓
+Filtered Sensor Data
+↓
+Main Loop
+↓
+Debug Output (OLED)
+
+说明：
+
+当前系统主要用于：
+
+- 验证 ADC + DMA 采样链路
+- 验证编码器模拟信号读取
+- 验证数据滤波
+- 验证调试输出
+
+当前系统 **不包含控制算法**。
+
+---
+
+# Future Control Flow (target)
+
+未来控制系统目标结构：
+
+Sensor
+↓
+ADC Sampling
+↓
+DMA Transfer
+↓
+Angle Calculation
+↓
+Control Algorithm
+↓
+PWM Output
+↓
+Motor
+
+---
+
+# Data Flow Upgrade Condition
+
+当完成以下目标时：
+
+- Encoder 角度读取稳定
+- PWM 电机驱动完成
+- 第一个闭环控制实验完成
+
+将建立新的架构文档：
+
+Docs/Architecture/data_flow.md
+
+# Current Codex Tasks
+
+当前阶段需要 Codex 完成的事情：
+
+1. 读取当前项目中的指定文件
+2. 分析当前工程从“采样显示工程”过渡到“控制工程”的最小改动路径
+3. 基于当前代码修改，分析哪些文件最适合作为第一步改动入口
+4. 按文件给出修改建议，不直接生成完整实现代码
+5. 检查当前改动是否会影响现有 ADC + DMA + 滤波链路
+6. 辅助分析 TIM3 作为控制节拍源是否合理
+7. 辅助分析 foc 模块应如何作为控制骨架入口
+
+Codex 当前推荐分析范围：
+
+- User/main.c
+- User/stm32f10x_it.c
+- Hardware/AD.c
+- Hardware/AD.h
+- Hardware/Periph_Init.c
+- Hardware/Periph_Init.h
+- Hardware/Encoder.c
+- Hardware/Encoder.h
+- Hardware/foc.c
+- Hardware/foc.h
+
+当前阶段禁止 Codex 默认执行的事情：
+
+- 不直接修改源码文件
+- 不直接重构整个工程
+- 不扫描整个项目
+- 不直接给出完整实现代码

@@ -302,3 +302,53 @@ Motor
 
 
 该架构将在后续阶段逐步实现。
+
+# 10 当前系统控制结构
+
+当前系统属于：
+
+Sensor Processing System
+
+数据流：
+
+Sensor
+↓
+ADC Sampling
+↓
+DMA Transfer
+↓
+Filter
+↓
+Application Logic
+↓
+Debug Output
+
+当前系统主要用于：
+
+- 传感器验证
+- 数据处理验证
+- 基础架构验证
+
+尚未进入实时控制阶段。
+
+然后再加：
+
+# 未来控制系统架构
+
+未来系统目标结构：
+
+Sensor
+↓
+ADC
+↓
+DMA
+↓
+Angle Calculation
+↓
+Control Algorithm
+↓
+FOC Control
+↓
+PWM Output
+↓
+Motor
