@@ -4,6 +4,7 @@
 #include "stm32f10x.h"
 
 void Perioh_gpioinit(void);
+void Perioh_tim1init(void);
 void Perioh_tim3init(void);
 void Perioh_nvicinit(void);
 void Perioh_ad1init(void);

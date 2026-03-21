@@ -60,6 +60,47 @@ void Perioh_gpioinit(void)
 //还有PB10和PB11没初始化不知道i2c咋用
 }
 
+void Perioh_tim1init(void)
+{
+  /*开启时钟*/
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);		      //开启TIM1的时钟
+
+  TIM_InternalClockConfig(TIM1);                                //选择TIM1为内部时钟模式
+
+  /* 定时器Tim1初始化 */
+  TIM_TimeBaseInitTypeDef TIM_InitStructure;
+  TIM_InitStructure.TIM_RepetitionCounter = 0;                  //高级定时器才有所以不用
+  TIM_InitStructure.TIM_Prescaler = 1-1;                        //PSC预分频器，将APB1时钟分频为1MHz
+  TIM_InitStructure.TIM_CounterMode = TIM_CounterMode_Up;       //计数器模式，向上计数
+  TIM_InitStructure.TIM_Period = 7200-1;                        //ARR自动重装载寄存器计数到999时产生中断
+  TIM_InitStructure.TIM_ClockDivision = TIM_CKD_DIV1;           //输入时钟滤波器分频，这里为1分频
+  TIM_TimeBaseInit(TIM1, &TIM_InitStructure);                   //配置定时器Tim1的时基单元，频率为72MHz/(72*100-1)=10kHz
+
+  /* PWM通道配置*/
+  TIM_OCInitTypeDef TIM_OCInitStructure;
+  TIM_OCStructInit(&TIM_OCInitStructure);
+  TIM_OCInitStructure.TIM_OCIdleState = TIM_OCIdleState_Reset;  //输出比较通道输出控制关闭时通道置0
+  TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;             //
+  TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCNIdleState_Reset;
+  TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
+  TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_High;
+  TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
+  TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Disable;
+  TIM_OCInitStructure.TIM_Pulse = 0;
+  TIM_OC1Init(TIM1,&TIM_OCInitStructure);
+  TIM_OC2Init(TIM1,&TIM_OCInitStructure);
+  TIM_OC3Init(TIM1,&TIM_OCInitStructure);
+
+  TIM_OC1PreloadConfig(TIM1,TIM_OCPreload_Enable);
+  TIM_OC2PreloadConfig(TIM1,TIM_OCPreload_Enable);
+  TIM_OC3PreloadConfig(TIM1,TIM_OCPreload_Enable);
+
+  TIM_CtrlPWMOutputs(TIM1,ENABLE);
+  
+  /* 使能定时器Tim1 */
+  TIM_Cmd(TIM1, ENABLE);
+}
+
 /**
   * @brief  配置Tim3外设的初始化
   * @retval 无返回值
@@ -68,12 +109,8 @@ void Perioh_tim3init(void)
 {
   /*开启时钟*/
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);		      //开启TIM3的时钟
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);		      //开启TIM2的时钟
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);		      //开启TIM1的时钟
   
   TIM_InternalClockConfig(TIM3);                                //选择TIM3为内部时钟模式
-  TIM_InternalClockConfig(TIM2);                                //选择TIM2为内部时钟模式
-  TIM_InternalClockConfig(TIM1);                                //选择TIM1为内部时钟模式
 
   /* 定时器Tim3初始化 */
   TIM_TimeBaseInitTypeDef TIM_InitStructure;
@@ -81,41 +118,15 @@ void Perioh_tim3init(void)
   TIM_InitStructure.TIM_RepetitionCounter = 0;                  //高级定时器才有所以不用
   TIM_InitStructure.TIM_Prescaler = 7200-1;                     //PSC预分频器，将APB1时钟分频为72MHz
   TIM_InitStructure.TIM_CounterMode = TIM_CounterMode_Up;       //计数器模式，向上计数
-  TIM_InitStructure.TIM_Period = 5000-1;                        //ARR自动重装载寄存器计数到999时产生中断
+  TIM_InitStructure.TIM_Period = 10-1;                          //ARR自动重装载寄存器计数到999时产生中断
   TIM_InitStructure.TIM_ClockDivision = TIM_CKD_DIV1;           //输入时钟滤波器分频，这里为1分频
-  TIM_TimeBaseInit(TIM3, &TIM_InitStructure);                   //配置定时器Tim3的时基单元，频率为72MHz/（7200*5000）=2Hz
-
-  TIM_InitStructure.TIM_RepetitionCounter = 0;                  //高级定时器才有所以不用
-  TIM_InitStructure.TIM_Prescaler = 7200-1;                     //PSC预分频器，将APB1时钟分频为72MHz
-  TIM_InitStructure.TIM_CounterMode = TIM_CounterMode_Up;       //计数器模式，向上计数
-  TIM_InitStructure.TIM_Period = 10-1;                          //ARR自动重装载寄存器计数到9时产生中断
-  TIM_InitStructure.TIM_ClockDivision = TIM_CKD_DIV1;           //输入时钟滤波器分频，这里为1分频
-  TIM_TimeBaseInit(TIM2, &TIM_InitStructure);                   //配置定时器Tim2的时基单元,频率为72MHz/72000=1KHz
-
-  // TIM_OCInitTypeDef TIM_OCInitStructure;
-  // TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;             //PWM模式1
-  // TIM_OCInitStructure.TIM_OutputState = ;
-  // TIM_OCInitStructure.TIM_OutputNState = ;
-  // TIM_OCInitStructure.TIM_Pulse = ;
-  // TIM_OCInitStructure.TIM_OCPolarity = ;
-  // TIM_OCInitStructure.TIM_OCNPolarity = ;
-  // TIM_OCInitStructure.TIM_OCIdleState = ;
-  // TIM_OCInitStructure.TIM_OCNIdleState = ;
-  // TIM_OC1Init(TIM2, &TIM_OCInitStructure);                      //配置定时器Tim2的通道1为PWM模式
-
-  TIM_InitStructure.TIM_RepetitionCounter = 0;                  //高级定时器才有所以不用
-  TIM_InitStructure.TIM_Prescaler = 7200-1;                     //PSC预分频器，将APB1时钟分频为72MHz
-  TIM_InitStructure.TIM_CounterMode = TIM_CounterMode_Up;       //计数器模式，向上计数
-  TIM_InitStructure.TIM_Period = 5000-1;                        //ARR自动重装载寄存器计数到999时产生中断
-  TIM_InitStructure.TIM_ClockDivision = TIM_CKD_DIV1;           //输入时钟滤波器分频，这里为1分频
-  TIM_TimeBaseInit(TIM1, &TIM_InitStructure);                   //配置定时器Tim1的时基单元，频率为72MHz/（7200*5000）=2Hz
+  TIM_TimeBaseInit(TIM3, &TIM_InitStructure);                   //配置定时器Tim3的时基单元，频率为72MHz/（7200*10）=1kHz
 
   /* 使能定时器Tim3中断 */
   TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
 
   /* 使能定时器Tim3 */
   TIM_Cmd(TIM3, ENABLE);
-  TIM_Cmd(TIM1, ENABLE);
 }
 
 void Perioh_nvicinit(void)

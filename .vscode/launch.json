@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "STM32 Attach (OpenOCD + STLink)",
+            "type": "cortex-debug",
+            "request": "attach",
+            "cwd": "${workspaceFolder}",
+            "executable": "E:/macang/Stm32/practice_all/build/Target_1/Project.axf",
+            "servertype": "openocd",
+            "svdFile": "pack/Keil/STM32F1xx_DFP.2.3.0/SVD/STM32F103.svd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f1x.cfg"
+            ],
+            "device": "STM32F103C8",
+            "interface": "swd",
+            "showDevDebugOutput": "raw",
+            "preAttachCommands": [
+                "monitor reset halt"
+            ],
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 4
+            }
+        }
+    ]
+}

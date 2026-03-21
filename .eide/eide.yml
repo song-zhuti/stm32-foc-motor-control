@@ -90,6 +90,8 @@ virtualFolder:
         - path: Hardware/mathoperation.h
         - path: Hardware/AD.c
         - path: Hardware/AD.h
+        - path: Hardware/Pwm.c
+        - path: Hardware/Pwm.h
       folders: []
     - name: User
       files:

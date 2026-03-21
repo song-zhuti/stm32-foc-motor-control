@@ -33,47 +33,48 @@ Docs/Notes/ai_context.md
 
 当前阶段：
 
-**从采样显示工程过渡到控制工程阶段**
+**硬件控制框架整理与验证阶段**
 
-目标：
+当前状态：
 
-- 保持现有 ADC + DMA + 滤波链路稳定
-- 建立控制任务骨架
-- 为后续 Encoder / PWM / 第一个闭环做准备
+- TIM3 基础节拍源已可用
+- ADC + DMA + 滤波链路保持可用
+- AS5600 OUT 模拟量读取可用
+- OLED 调试显示可用
+- 当前控制调度骨架仅用于验证执行流，不作为正式 FOC 执行方案
+
+当前目标：
+
+- 先完成硬件控制框架整理
+- 先确认 PWM 输出链路
+- 先确认 Encoder 反馈链路
+- 先明确 Motor / PWM / Encoder 模块边界
+- 暂不推进 FOC 实时执行迁移
+
 ---
 
 # 当前开发任务
 
 当前任务：
 
-1 建立控制任务骨架
+1 先完成硬件控制框架整理
 
 目标：
 
-- 明确 TIM3 作为控制节拍源
-- 将控制逻辑入口放入 foc 模块
-- main 循环只保留慢速显示与调试
-- 为后续 Encoder 和 PWM 接入做准备
+- 保持 ADC + DMA + 滤波链路稳定
+- 明确 Encoder 模块输入输出接口
+- 明确 PWM 模块初始化与输出接口
+- 明确 Motor 模块职责与控制入口
+- 保持 TIM3 仅作为基础节拍与调试验证使用
+- foc 模块暂只保留骨架，不进入正式实时执行阶段
 
-计划接口：
+当前优先事项：
 
-Control_Init()  
-Control_Task()  
-Control_SetTarget()
-
-2 整理 Encoder 模块
-
-目标：
-
-- 将编码器逻辑从 ADC 模块中分离
-- 建立独立的 encoder 模块
-
-计划接口：
-
-Encoder_Init()  
-Encoder_Update()  
-Encoder_GetAngle()  
-Encoder_GetRawAdc()
+- 梳理 TIM1 PWM 输出引脚与初始化方案
+- 整理 Encoder 模块接口
+- 整理 Motor / PWM / Encoder 模块边界
+- 核对硬件引脚映射与代码配置一致性
+- 为后续闭环控制预留接口
 
 ---
 
@@ -110,6 +111,8 @@ Encoder_GetRawAdc()
 - 电机 GPIO 驱动验证
 - 文档体系建立
 - .gitignore 整理
+- TIM3 基础节拍调度跑通
+- 主循环基于 Tim3_tick 的异步任务执行跑通
 
 ---
 
@@ -117,21 +120,28 @@ Encoder_GetRawAdc()
 
 短期任务：
 
+- [ ] 核对硬件引脚映射与代码配置一致性
+- [ ] 梳理 TIM1 PWM 输出引脚
+- [ ] 完成 PWM 初始化方案设计
 - [ ] 整理 AD 模块接口
 - [ ] 独立 Encoder 模块
-- [ ] 核对所有 ADC 通道配置
+- [ ] 明确 Motor / PWM / Encoder 模块接口关系
+- [ ] 保持当前 TIM3 调度骨架仅用于验证，不继续扩展为正式 FOC 执行结构
 
 中期任务：
 
 - [ ] 建立 PWM 驱动模块
 - [ ] 使用 TIM1 输出 PWM
-- [ ] 替换 GPIO 电机驱动
+- [ ] 替换当前 GPIO 电机驱动
+- [ ] 验证 Encoder 反馈链路稳定性
+- [ ] 建立基础 Motor 控制模块
 
 长期目标：
 
 - [ ] 实现角度连续化处理
 - [ ] 实现角速度计算
-- [ ] 建立电机控制架构
+- [ ] 建立第一个闭环控制实验
+- [ ] 在硬件链路稳定后迁移到实时控制执行结构
 - [ ] 为 FOC 控制做准备
 
 ---
@@ -237,6 +247,58 @@ Debug Output (OLED)
 
 当前系统 **不包含控制算法**。
 
+
+---
+
+# Control Scheduling Note (temporary)
+
+当前工程中的控制任务调度方式属于 **过渡方案**。
+
+当前结构：
+
+TIM3 interrupt
+↓
+tick update / pending mark
+↓
+main loop
+↓
+control task execution
+
+说明：
+
+- 当前方案的目标是先建立控制模块骨架
+- 当前方案用于验证执行流、模块接口和调度关系
+- 当前方案不是最终的 FOC 执行结构
+
+原因：
+
+- 主循环中的 OLED 显示、调试输出和其他耗时操作会影响控制任务的实际执行时刻
+- 即使定时器节拍固定，主循环异步执行仍然会引入控制周期抖动
+- 对真正的 FOC 算法来说，控制周期应尽量固定、实时、可预测
+
+后续目标：
+
+当完成以下条件后，应将控制算法迁移到严格周期执行结构：
+
+- Encoder 反馈链路稳定
+- PWM 输出链路稳定
+- 第一个闭环控制实验完成
+
+最终目标结构：
+
+Timer / PWM synchronized interrupt
+↓
+sensor update
+↓
+control algorithm
+↓
+PWM update
+
+结论：
+
+当前 main loop 异步执行只作为控制框架验证方案使用，
+未来真正的 FOC 核心算法不应长期放在主循环中执行。
+
 ---
 
 # Future Control Flow (target)
@@ -267,10 +329,7 @@ Motor
 - PWM 电机驱动完成
 - 第一个闭环控制实验完成
 
-将建立新的架构文档：
-
-Docs/Architecture/data_flow.md
-
+将建立独立的数据流文档。
 # Current Codex Tasks
 
 当前阶段需要 Codex 完成的事情：
@@ -302,3 +361,57 @@ Codex 当前推荐分析范围：
 - 不直接重构整个工程
 - 不扫描整个项目
 - 不直接给出完整实现代码
+
+# Current Strategy Note
+
+当前阶段策略：
+
+当前工程优先完成硬件控制框架整理，不提前推进正式 FOC 实时执行迁移。
+
+说明：
+
+- 当前 TIM3 + main loop 调度骨架仅用于验证模块接口与执行流
+- 当前阶段重点不是控制算法本身，而是硬件链路与模块边界整理
+- 在 PWM 输出链路、Encoder 反馈链路、Motor 控制模块未稳定前，不进入正式实时闭环控制阶段
+- 当硬件框架稳定后，再重新规划 FOC 的实时执行位置与控制周期结构
+
+当前优先级：
+
+硬件链路稳定性  
+> 模块边界清晰  
+> 基础控制框架可扩展  
+> FOC 实时执行迁移
+
+# 今日开发记录
+
+今日主要工作：
+
+完成 TIM1 PWM 初始化学习与验证。
+
+当前进展：
+
+- 已完成 TIM1 PWM 基础配置
+- 已理解 PSC / ARR / CCR 对 PWM 的影响
+- 已确认 PWM 占空比由 CCR 控制
+- 已确认运行时可通过 `TIM_SetComparex()` 修改 CCR
+- 已理解高级定时器 TIM1 需要调用 `TIM_CtrlPWMOutputs()` 才能输出 PWM
+
+当前系统状态：
+
+TIM1 PWM 输出链路已经基本跑通，可输出 PWM 波形。
+
+当前阶段仍处于 **硬件控制框架整理阶段**，
+PWM 配置目前用于验证驱动链路，不作为最终控制方案。
+
+后续学习内容：
+
+- `TIM_CtrlPWMOutputs()` 工作机制
+- CCR Preload 机制
+- PWM 周期更新方式
+
+下一步计划：
+
+- 整理 PWM 初始化代码结构
+- 明确 PWM 模块接口
+- 梳理 Motor / PWM / Encoder 模块边界
+- vscode的快捷键有的冲突研究解决一下

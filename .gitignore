@@ -1,9 +1,7 @@
 # ================================
 # IDE / Editor
 # ================================
-.vscode/
 .settings/
-.eide/
 *.swp
 *.swo
 *~
@@ -83,14 +81,14 @@ Thumbs.db
 # 文档资料
 Docs/Archive/
 
-# 硬件资料
+# �?件资�?
 Docs/Board/
 Docs/Encoder/
 
 # MCU资料
 Docs/MCU/
 
-# Docs 文档资料文件（只在 Docs 目录忽略）
+# Docs 文档资料文件（只�? Docs �?录忽略）
 Docs/**/*.png
 Docs/**/*.jpg
 Docs/**/*.jpeg

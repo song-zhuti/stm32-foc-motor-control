@@ -20,7 +20,12 @@
             "**/Debug": true,
             "**/Release": true,
             "**/.vscode": false
-        }
+        },
+        "files.autoGuessEncoding": true,
+        "files.candidateGuessEncodings": [
+            "utf8",
+            "gb2312"
+        ]
     },
     "extensions": {
         "recommendations": [

@@ -4,6 +4,10 @@
 #include "Delay.h"
 #include "OLED.h"
 #include "AD.h"
+#include "foc.h"
+#include "Pwm.h"
+
+volatile uint32_t Tim3_tick = 0;
 
 /* 三相UVW换向表：每行表示一个换向步，列顺序为 {U, V, W} */
 /* 值含义： */
@@ -30,26 +34,54 @@ void BLDC_Six(void)
 	}
 }
 
+void heartbeat_led(void)
+{
+	if(GPIO_ReadOutputDataBit(GPIOC, GPIO_Pin_13) == Bit_SET)
+	{
+		GPIO_ResetBits(GPIOC, GPIO_Pin_13);
+	}
+	else
+	{
+		GPIO_SetBits(GPIOC, GPIO_Pin_13);
+	}
+}
+
 int main(void)
 {
 	/*模块初始化*/
 	OLED_Init();			//OLED初始化
-	Perioh_gpioinit();	//GPIO初始化
-	Perioh_nvicinit();	//NVIC初始化
-	Perioh_tim3init();	//TIM初始化
+	Perioh_gpioinit();		//GPIO初始化
+	Perioh_nvicinit();		//NVIC初始化
+	Perioh_tim1init();
+	Perioh_tim3init();		//TIM初始化
+
 	ad_init(16);
+	FOC_Init();
+	FOC_SetEnable(ENABLE);
+	Pwm_Init();
 
 	/*显示静态字符串*/
-	OLED_ShowString(1, 1, "Hello");	//1行1列显示字符串Count:
+	OLED_ShowString(1, 1, "Hello World");	//1行1列显示字符串Count:
 	GPIO_SetBits(GPIOA,GPIO_Pin_11);  	//simplefoc_enable置1
 	
 	while (1)
 	{
-		OLED_ShowNum(2, 1, (uint32_t)(get_ad_filter(X_AXIS)->prev_output), 4);
-		OLED_ShowNum(2, 6, (uint32_t)(get_ad_filter(Y_AXIS)->prev_output), 4);
-		OLED_ShowNum(2, 11, (uint32_t)(get_ad_filter(ENCODER)->prev_output), 4);
 
-		// BLDC_Six();
-		Delay_ms(200);
+		FOC_RunIfPending();
+
+		#ifdef Pwm_Test
+			Pwm_RunIfPending();
+		#endif
+
+		if(Tim3_tick >= 200)
+		{
+			heartbeat_led();
+			OLED_ShowNum(2, 1, (uint32_t)(get_ad_filter(X_AXIS)->prev_output), 4);
+			OLED_ShowNum(2, 6, (uint32_t)(get_ad_filter(Y_AXIS)->prev_output), 4);
+			OLED_ShowNum(2, 11, (uint32_t)(get_ad_filter(ENCODER)->prev_output), 4);
+			OLED_ShowNum(3, 1, FOC_GetRunCount()*5, 4);
+
+			Tim3_tick -= 200;
+		}
 	}
 }

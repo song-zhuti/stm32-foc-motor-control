@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "STM32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "e:/macang/Stm32/practice_all/Start",
+                "e:/macang/Stm32/practice_all/User",
+                "e:/macang/Stm32/practice_all/Hardware",
+                "e:/macang/Stm32/practice_all/Library"
+            ],
+            "defines": [
+                "USE_STDPERIPH_DRIVER",
+                "STM32F10X_MD"
+            ],
+            "compilerPath": "D:/mingw64/bin/gcc.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-arm"
+        }
+    ],
+    "version": 4
+}

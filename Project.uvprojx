@@ -7,7 +7,7 @@
 
   <Targets>
     <Target>
-      <TargetName>Target 1</TargetName>
+      <TargetName>Target_1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <pCCUsed>5060528::V5.06 update 5 (build 528)::ARMCC</pCCUsed>
@@ -743,6 +743,36 @@
               <FileName>mathoperation.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Hardware\mathoperation.h</FilePath>
+            </File>
+            <File>
+              <FileName>Encoder.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Hardware\Encoder.c</FilePath>
+            </File>
+            <File>
+              <FileName>Encoder.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Hardware\Encoder.h</FilePath>
+            </File>
+            <File>
+              <FileName>foc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Hardware\foc.c</FilePath>
+            </File>
+            <File>
+              <FileName>foc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Hardware\foc.h</FilePath>
+            </File>
+            <File>
+              <FileName>Pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Hardware\Pwm.c</FilePath>
+            </File>
+            <File>
+              <FileName>Pwm.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Hardware\Pwm.h</FilePath>
             </File>
           </Files>
         </Group>

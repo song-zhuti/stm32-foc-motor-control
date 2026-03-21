@@ -23,6 +23,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
+#include "main.h"
+#include "foc.h"
+#include "Pwm.h"
 
 /** @addtogroup STM32F10x_StdPeriph_Template
   * @{
@@ -145,15 +148,12 @@ void TIM3_IRQHandler(void)
 {
   if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)
   {
-    static uint8_t gpio_state = 0;
-    if(gpio_state == 0){
-      GPIO_SetBits(GPIOC, GPIO_Pin_13);
-      gpio_state = 1;
-    }
-    else{
-      GPIO_ResetBits(GPIOC, GPIO_Pin_13);
-      gpio_state = 0;
-    }
+      /* code */
+    Tim3_tick++;
+    FOC_OnTimerTickISR();
+    #ifdef Pwm_Test
+      Pwm_OnTimerTickISR();
+    #endif
     /* 清除中断标志位 */
     TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
   }
